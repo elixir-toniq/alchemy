@@ -1,6 +1,28 @@
 # Alchemy
 
+
+[![Hex.pm](https://img.shields.io/hexpm/v/alchemy.svg?style=flat-square)](https://hex.pm/packages/alchemy)
+[![Hex.pm](https://img.shields.io/hexpm/dt/alchemy.svg?style=flat-square)](https://hex.pm/packages/alchemy)
+
 Perform refactoring experiments in production. Based on [Scientist](https://github.com/github/scientist)
+
+---
+
+## Installation
+
+1. Add alchemy to your list of dependencies in `mix.exs`:
+``` elixir
+def deps do
+  [{:alchemy, "~> 0.0.1"}]
+end
+```
+
+2. Ensure that alchemy is started before your application:
+``` elixir
+def application do
+  [applications: [:alchemy]]
+end
+```
 
 ## Perform some experiments
 
@@ -8,22 +30,22 @@ Lets say that you have a controller that returns a list of users, and you want t
 
 ```elixir
 defmodule MyApp.UserController do
-  alias Alchemy.Experiment
-  
+  import Alchemy.Experiment
+
   def index(conn) do
     users =
       experiment("users-query")
       |> control(&old_query/0)
       |> candidate(&new_query/0)
       |> run
-      
+
     render(conn, "index.json", users: users)
   end
-  
+
   defp old_query do
     # ...
   end
-  
+
   defp new_query do
     # ...
   end
@@ -43,7 +65,7 @@ defmodule MyApp.ExperimentPublisher do
     control    = result.control
     candidate  = hd(result.observations)
     mismatched = Result.mismatched?(result)
-    
+
     Logger.debug """
     Test: #{experiment.name}
     Mismatch?: #{Result.mismatched?(result)}
@@ -92,21 +114,6 @@ def user_name do
   |> candidate(fn -> %{id: 2, name: "Alice"} end)
   |> comparator(fn(control, candidate) -> control.name == candidate.name end)
   |> run
-end
-```
-
-## Installation
-
-1. Add alchemy to your list of dependencies in `mix.exs`:
-``` elixir
-def deps do
-  [{:alchemy, "~> 0.0.1"}]
-end
-```
-2. Ensure that alchemy is started before your application:
-``` elixir
-def application do
-  [applications: [:alchemy]]
 end
 ```
 
