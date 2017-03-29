@@ -10,7 +10,7 @@ defmodule Alchemy.Experiment do
   Generates a new experiment struct
   """
   def experiment(title) do
-    %Experiment{name: title, uuid: uuid}
+    %Experiment{name: title, uuid: uuid()}
     |> comparator(fn(a, b) -> a == b end)
   end
 
