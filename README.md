@@ -85,8 +85,11 @@ And tell Alchemy where to send your results:
 # config/config.exs
 use Mix.Config
 
-config :alchemy,
-  publish_module: MyApp.ExperimentPublisher
+config :alchemy, publish_module: MyApp.ExperimentPublisher
+
+# configure alchemy's await timeout
+# default await timeout: 5_000
+config :alchemy, await_timeout: 100_000
 ```
 
 The publish function allows you to publish your results in whatever makes most sense for your application. You could persist them in ETS tables or stash them in Redis.
