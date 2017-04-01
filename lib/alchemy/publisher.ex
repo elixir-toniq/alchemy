@@ -16,7 +16,7 @@ defmodule Alchemy.Publisher do
   end
 
   def handle_call({:publish, result}, _from, state) do
-    user_defined_publisher.publish(result)
+    user_defined_publisher().publish(result)
     {:reply, result, state}
   end
 
