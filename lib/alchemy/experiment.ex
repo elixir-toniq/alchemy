@@ -10,7 +10,7 @@ defmodule Alchemy.Experiment do
   Generates a new experiment struct
   """
   def experiment(title) do
-    %Experiment{name: title, uuid: uuid}
+    %Experiment{name: title, uuid: uuid()}
     |> comparator(fn(a, b) -> a == b end)
   end
 
@@ -98,6 +98,6 @@ defmodule Alchemy.Experiment do
   end
 
   defp await(thunk) do
-    Task.await(thunk)
+    Task.await(thunk, Application.get_env(:alchemy, :await_timeout, 5_000))
   end
 end
