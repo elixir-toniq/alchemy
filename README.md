@@ -11,17 +11,9 @@ Perform refactoring experiments in production. Inspired by [Scientist](https://g
 
 ## Installation
 
-1. Add alchemy to your list of dependencies in `mix.exs`:
 ``` elixir
 def deps do
   [{:alchemy, "~> 0.0.1"}]
-end
-```
-
-2. Ensure that alchemy is started before your application:
-``` elixir
-def application do
-  [applications: [:alchemy]]
 end
 ```
 
