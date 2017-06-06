@@ -30,14 +30,14 @@ Lets say that you have a controller that returns a list of users, and you want t
 
 ```elixir
 defmodule MyApp.UserController do
-  import Alchemy.Experiment
+  alias Alchemy.Experiment
 
   def index(conn) do
     users =
-      experiment("users-query")
-      |> control(&old_query/0)
-      |> candidate(&new_query/0)
-      |> run
+      Experiment.experiment("users-query")
+      |> Experiment.control(&old_query/0)
+      |> Experiment.candidate(&new_query/0)
+      |> Experiment.run
 
     render(conn, "index.json", users: users)
   end
