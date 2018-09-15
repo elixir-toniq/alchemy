@@ -2,7 +2,6 @@ defmodule Alchemy do
   @moduledoc ~S"""
 
   """
-
   use Application
   require Logger
 
