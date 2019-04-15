@@ -4,7 +4,7 @@ defmodule Alchemy.Mixfile do
   def project do
     [app: :alchemy,
      description: "Perform experiments in production",
-     version: "0.0.1",
+     version: "0.2.0",
      elixir: "~> 1.6",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
