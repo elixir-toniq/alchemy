@@ -8,13 +8,12 @@ defmodule Alchemy.Supervisor do
   Starts the supervisor
   """
   def start_link() do
-    Supervisor.start_link(__MODULE__, {:ok})
+    Supervisor.start_link(__MODULE__, :ok)
   end
 
-  def init({:ok}) do
+  def init(:ok) do
     children = [
-      supervisor(Task.Supervisor, [[name: @task_supervisor]]),
-      worker(Alchemy.Publisher, [Alchemy.Publisher])
+      supervisor(Task.Supervisor, [[name: @task_supervisor]])
     ]
 
     supervise(children, strategy: :one_for_one)

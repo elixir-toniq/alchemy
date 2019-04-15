@@ -1,17 +1,32 @@
 defmodule Alchemy.Experiment do
-  defstruct name: "", uuid: nil, behaviors: [], compare: nil
+  defstruct [
+    name: "",
+    uuid: nil,
+    behaviors: [],
+    compare: nil,
+    result: nil,
+    publisher: nil,
+  ]
 
   alias __MODULE__
   alias Alchemy.Observation
   alias Alchemy.Result
-  alias Alchemy.Publisher
+
+  require Logger
 
   @doc """
   Generates a new experiment struct
   """
-  def experiment(title) do
+  def new(title) do
     %Experiment{name: title, uuid: uuid()}
     |> comparator(fn(a, b) -> a == b end)
+  end
+
+  @doc """
+  Sets the module to use for publishing results.
+  """
+  def publisher(experiment, mod) when is_atom(mod) do
+    %{experiment | publisher: mod}
   end
 
   @doc """
@@ -55,8 +70,8 @@ defmodule Alchemy.Experiment do
   def run(experiment=%Experiment{}) do
     experiment
     |> gather_result
-    |> Publisher.publish
-    |> Result.control_value
+    |> publish(experiment.publisher)
+    |> control_value
   end
 
   defp gather_result(experiment) do
@@ -77,16 +92,26 @@ defmodule Alchemy.Experiment do
       |> Keyword.delete(:control)
       |> Enum.map(fn(a) -> elem(a, 1) end)
 
-    %Alchemy.Result{
-      experiment: experiment,
-      control: control,
-      observations: candidates
-    }
+    Result.new(experiment, control, candidates)
+  end
+
+  defp publish(result, nil) do
+    Logger.debug(fn -> "Finished experiment: #{inspect result}" end)
+    result
+  end
+
+  defp publish(result, publisher) do
+    publisher.publish(result)
+    result
   end
 
   defp add_behavior(exp, type, thunk) do
     behaviors = exp.behaviors ++ [{type, thunk}]
     %Experiment{exp | behaviors: behaviors}
+  end
+
+  def control_value(%{control: control}) do
+    control.value
   end
 
   defp uuid do
