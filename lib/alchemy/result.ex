@@ -1,19 +1,31 @@
 defmodule Alchemy.Result do
-  defstruct experiment: nil, control: nil, observations: []
+  defstruct [
+    name: nil,
+    control: nil,
+    candidates: [],
+    uuid: nil,
+    mismatched: []
+  ]
 
   alias Alchemy.Result
 
-  def control_value(%Result{control: control}) do
-    control.value
+  def new(experiment, control, candidates) do
+    mismatched = Enum.filter(candidates, fn(candidate) ->
+      !experiment.compare.(control, candidate)
+    end)
+
+    %Result{
+      name: experiment.name,
+      uuid: experiment.uuid,
+      control: control,
+      candidates: candidates,
+      mismatched: mismatched
+    }
   end
 
-  def control_duration(%Result{control: control}) do
-    control.duration
-  end
+  def matched?(%{mismatched: mismatched}), do: mismatched == []
 
-  def mismatched?(%Result{experiment: exp, observations: observations, control: control}) do
-    observations
-    |> Enum.map(fn(observation) -> !exp.compare.(control, observation) end)
-    |> Enum.all?
+  def mismatched?(%{mismatched: mismatched}) do
+    Enum.any?(mismatched)
   end
 end
