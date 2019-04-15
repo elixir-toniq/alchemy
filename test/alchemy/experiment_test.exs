@@ -60,4 +60,13 @@ defmodule Alchemy.ExperimentTest do
 
     assert result == 6
   end
+
+  test "exceptions inside of control are captured" do
+    result =
+      new("exceptions test")
+      |> control(fn -> raise RuntimeError, "Some exception" end)
+      |> run
+
+    assert result ==
+  end
 end
