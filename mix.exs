@@ -5,7 +5,7 @@ defmodule Alchemy.Mixfile do
     [app: :alchemy,
      description: "Perform experiments in production",
      version: "0.2.0",
-     elixir: "~> 1.6",
+     elixir: "~> 1.7",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package(),
@@ -20,7 +20,7 @@ defmodule Alchemy.Mixfile do
   defp deps do
     [
       {:uuid, "~> 1.1"},
-      {:ex_doc, "~> 0.16", only: :dev},
+      {:ex_doc, "~> 0.20", only: :dev},
       {:earmark, "~> 1.2", only: :dev}
     ]
   end
