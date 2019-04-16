@@ -61,12 +61,42 @@ defmodule Alchemy.ExperimentTest do
     assert result == 6
   end
 
-  test "exceptions inside of control are captured" do
+  test "errors inside of control are rethrown" do
+    assert_raise ArithmeticError, fn ->
+      new("errors test")
+      |> control(fn -> 42 / 0 end)
+      |> run
+    end
+  end
+
+  test "errors are compared between control and candidate" do
+    pid = self()
+
+    spawn(fn ->
+      assert_raise ArithmeticError, fn ->
+        new("errors test")
+        |> control(fn -> 42 / 0 end)
+        |> candidate(fn -> 1337 / 0 end)
+        |> comparator(fn(control, candidate) ->
+          result = control == candidate
+          send(pid, {:result, result})
+          result
+        end)
+        |> run
+      end
+    end)
+
+    assert_receive {:result, true}
+  end
+
+  test "errors in control are returned but not raised" do
     result =
-      new("exceptions test")
-      |> control(fn -> raise RuntimeError, "Some exception" end)
+      new("errors test")
+      |> control(fn -> 42 end)
+      |> candidate(fn -> 1337 / 0 end)
       |> run
 
-    assert result ==
+    assert result == 42
   end
 end
+

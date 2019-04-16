@@ -7,11 +7,13 @@ defmodule Alchemy.Result do
     mismatched: []
   ]
 
-  alias Alchemy.Result
+  alias Alchemy.{Result, Observation}
 
   def new(experiment, control, candidates) do
     mismatched = Enum.filter(candidates, fn(candidate) ->
-      !experiment.compare.(control, candidate)
+      c1 = control.value || control.error.error
+      c2 = candidate.value || candidate.error.error
+      !experiment.compare.(c1, c2)
     end)
 
     %Result{
@@ -28,4 +30,7 @@ defmodule Alchemy.Result do
   def mismatched?(%{mismatched: mismatched}) do
     Enum.any?(mismatched)
   end
+
+  def raised?(%Observation{error: nil}), do: false
+  def raised?(_), do: true
 end
