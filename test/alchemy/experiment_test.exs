@@ -4,6 +4,8 @@ defmodule Alchemy.ExperimentTest do
 
   import Alchemy.Experiment
 
+  alias Alchemy.Result
+
   test "new/1 assigns a name" do
     assert new("test").name == "test"
   end
@@ -136,7 +138,19 @@ defmodule Alchemy.ExperimentTest do
 
   describe "ignore/2" do
     test "can ignore value mismatches" do
-      flunk "Not implemented yet"
+      pid = self()
+
+      spawn(fn ->
+        new("clean")
+        |> control(fn -> %{name: "Chris"} end)
+        |> candidate(fn -> %{name: "Andra"} end)
+        |> ignore(fn %{name: "Chris"}, %{name: "Andra"} -> true end)
+        |> publisher(fn result -> send(pid, {:result, result}) end)
+        |> run
+      end)
+
+      assert_receive {:result, result}
+      assert Result.ignored?(result) == true
     end
   end
 end

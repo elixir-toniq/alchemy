@@ -4,24 +4,30 @@ defmodule Alchemy.Result do
     control: nil,
     candidates: [],
     uuid: nil,
-    mismatched: []
+    mismatched: [],
+    ignored: [],
   ]
 
   alias Alchemy.{Result, Observation}
 
   def new(experiment, control, candidates) do
-    mismatched = Enum.filter(candidates, fn(candidate) ->
-      c1 = control.value || control.error.error
-      c2 = candidate.value || candidate.error.error
-      !experiment.compare.(c1, c2)
-    end)
+    ignored =
+      candidates
+      |> Enum.filter(fn(candidate) -> value_mismatch?(control, candidate) end)
+      |> Enum.filter(fn(candidate) -> ignored?(experiment, control, candidate) end)
+
+    mismatched =
+      candidates
+      |> Enum.filter(fn(can) -> compare_observations(experiment, control, can) end)
+      |> Enum.filter(fn(can) -> can in ignored end)
 
     %Result{
       name: experiment.name,
       uuid: experiment.uuid,
       control: control,
       candidates: candidates,
-      mismatched: mismatched
+      mismatched: mismatched,
+      ignored: ignored
     }
   end
 
@@ -31,6 +37,24 @@ defmodule Alchemy.Result do
     Enum.any?(mismatched)
   end
 
+  def ignored?(%{ignored: ignored}) do
+    Enum.any?(ignored)
+  end
+
   def raised?(%Observation{error: nil}), do: false
   def raised?(_), do: true
+
+  defp compare_observations(experiment, control, candidate) do
+    c1 = control.value || control.error.error
+    c2 = candidate.value || candidate.error.error
+    !experiment.compare.(c1, c2)
+  end
+
+  defp value_mismatch?(%{value: value}, %{value: value}), do: false
+  defp value_mismatch?(_, _), do: true
+
+  defp ignored?(%{ignores: ignores}, control, candidate) do
+    ignores
+    |> Enum.any?(fn f -> f.(control.value, candidate.value) == true end)
+  end
 end
