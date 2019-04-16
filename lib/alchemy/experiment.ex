@@ -17,9 +17,9 @@ defmodule Alchemy.Experiment do
   require Logger
 
   @doc """
-  Generates a new experiment struct
+  Generates a new experiment. Alias for `Experiment.new/1`
   """
-  def new(title) do
+  def experiment(title) do
     %Experiment{name: title, uuid: uuid()}
     |> comparator(fn(a, b) -> a == b end)
     |> clean(fn value -> value end)

@@ -6,21 +6,21 @@ defmodule Alchemy.ExperimentTest do
 
   alias Alchemy.Result
 
-  test "new/1 assigns a name" do
-    assert new("test").name == "test"
+  test "experiment/1 assigns a name" do
+    assert experiment("test").name == "test"
   end
 
-  test "new/1 generates a unique identifier" do
-    assert new("test").uuid
+  test "experiment/1 generates a unique identifier" do
+    assert experiment("test").uuid
   end
 
-  test "new/1 generates a default comparator" do
-    assert new("test").compare
+  test "experiment/1 generates a default comparator" do
+    assert experiment("test").compare
   end
 
   test "comparator/2 updates the comparison for the new" do
     exp =
-      new("test")
+      experiment("test")
       |> comparator(fn(a, b) -> a.value == b.value end)
 
     assert exp.compare.(%{uuid: 1, value: 1337}, %{uuid: 2, value: 1337})
@@ -28,7 +28,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "control/2 assigns the control" do
     result =
-      new("Test new")
+      experiment("Test new")
       |> control(fn -> IO.puts "Hello world" end)
 
     assert Enum.count(result.behaviors) == 1
@@ -36,7 +36,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "candidate/2 can assign multiple candidates" do
     result =
-      new("test")
+      experiment("test")
       |> candidate(fn -> 1 end)
       |> candidate(fn -> 2 end)
       |> candidate(fn -> 3 end)
@@ -46,7 +46,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "run/1 yields the controls result" do
     result =
-      new("Test new")
+      experiment("Test new")
       |> control(fn -> 3 + 3 end)
       |> candidate(fn -> 3 + 4 end)
       |> run
@@ -56,7 +56,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "run/1 does not require a candidate" do
     result =
-      new("Test new")
+      experiment("Test new")
       |> control(fn -> 3 + 3 end)
       |> run
 
@@ -65,7 +65,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "errors inside of control are rethrown" do
     assert_raise ArithmeticError, fn ->
-      new("errors test")
+      experiment("errors test")
       |> control(fn -> 42 / 0 end)
       |> run
     end
@@ -76,7 +76,7 @@ defmodule Alchemy.ExperimentTest do
 
     spawn(fn ->
       assert_raise ArithmeticError, fn ->
-        new("errors test")
+        experiment("errors test")
         |> control(fn -> 42 / 0 end)
         |> candidate(fn -> 1337 / 0 end)
         |> comparator(fn(control, candidate) ->
@@ -93,7 +93,7 @@ defmodule Alchemy.ExperimentTest do
 
   test "errors in control are returned but not raised" do
     result =
-      new("errors test")
+      experiment("errors test")
       |> control(fn -> 42 end)
       |> candidate(fn -> 1337 / 0 end)
       |> run
@@ -106,7 +106,7 @@ defmodule Alchemy.ExperimentTest do
       pid = self()
 
       spawn(fn ->
-        new("clean")
+        experiment("clean")
         |> control(fn -> %{name: "Chris"} end)
         |> candidate(fn -> %{name: "Andra"} end)
         |> publisher(fn result -> send(pid, {:result, result}) end)
@@ -122,7 +122,7 @@ defmodule Alchemy.ExperimentTest do
       pid = self()
 
       spawn(fn ->
-        new("clean")
+        experiment("clean")
         |> control(fn -> %{name: "Chris"} end)
         |> candidate(fn -> %{name: "Andra"} end)
         |> publisher(fn result -> send(pid, {:result, result}) end)
@@ -141,10 +141,29 @@ defmodule Alchemy.ExperimentTest do
       pid = self()
 
       spawn(fn ->
-        new("clean")
+        experiment("clean")
         |> control(fn -> %{name: "Chris"} end)
         |> candidate(fn -> %{name: "Andra"} end)
         |> ignore(fn %{name: "Chris"}, %{name: "Andra"} -> true end)
+        |> publisher(fn result -> send(pid, {:result, result}) end)
+        |> run
+      end)
+
+      assert_receive {:result, result}
+      assert Result.ignored?(result) == true
+    end
+
+    test "allows multiple clauses to be stacked together" do
+      pid = self()
+
+      spawn(fn ->
+        experiment("clean")
+        |> control(fn -> %{name: "Chris"} end)
+        |> candidate(fn -> %{name: "Bob"} end)
+        # This ignore should work
+        |> ignore(fn control, _ -> control.name == "Chris" end)
+        # This ignore will not so we can ensure that we're not shadowing it
+        |> ignore(fn _, %{name: name} -> name == "Andra" end)
         |> publisher(fn result -> send(pid, {:result, result}) end)
         |> run
       end)
