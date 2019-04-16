@@ -63,9 +63,11 @@ defmodule Alchemy.Experiment do
 
   If the `candidate` is provided then it will be run against the `control`. The
   `control` must be provided for the experiment to be run. The `control`
-  is always returned. In order to optimize the overall execution time both the
-  `candidate` and the `control` are executed concurrently. The execution order is
-  randomized to account for any ordering issues.
+  is always returned. The execution order is randomized to account for any
+  ordering issues. Execution for these functions is done in serial. This is
+  because adding concurrent execution adds additional layers of error handling
+  that would need to occur and doing so is best done in the users application
+  code and not in this library code.
   """
   def run(experiment=%Experiment{}) do
     observations =
