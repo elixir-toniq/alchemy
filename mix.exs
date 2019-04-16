@@ -2,14 +2,17 @@ defmodule Alchemy.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :alchemy,
-     description: "Perform experiments in production",
-     version: "0.2.0",
-     elixir: "~> 1.7",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     package: package(),
-     deps: deps()]
+    [
+      app: :alchemy,
+      description: "Perform experiments in production",
+      version: "0.3.0",
+      elixir: "~> 1.7",
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      package: package(),
+      deps: deps(),
+      docs: docs(),
+    ]
   end
 
   def application do
@@ -25,9 +28,19 @@ defmodule Alchemy.Mixfile do
   end
 
   defp package do
-    [maintainers: ["Chris Keathley"],
-     licenses: ["MIT"],
-     links: %{github: "https://github.com/keathley/alchemy"}]
+    [
+      maintainers: ["Chris Keathley"],
+      files: ["lib", "mix.exs", "README*", "LICENSE*"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/keathley/alchemy"}
+    ]
   end
 
+  defp docs do
+    [
+      extras: ["README.md"],
+      main: "readme",
+      source_url: "https://github.com/keathley/alchemy",
+    ]
+  end
 end
