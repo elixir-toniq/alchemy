@@ -133,5 +133,11 @@ defmodule Alchemy.ExperimentTest do
       assert Enum.at(result.candidates, 0).cleaned_value == "Andra"
     end
   end
+
+  describe "ignore/2" do
+    test "can ignore value mismatches" do
+      flunk "Not implemented yet"
+    end
+  end
 end
 
