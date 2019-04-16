@@ -2,7 +2,6 @@
 
 [![Hex.pm](https://img.shields.io/hexpm/v/alchemy.svg?style=flat-square)](https://hex.pm/packages/alchemy)
 [![Hex.pm](https://img.shields.io/hexpm/dt/alchemy.svg?style=flat-square)](https://hex.pm/packages/alchemy)
-[![Build Status](https://travis-ci.org/keathley/alchemy.svg?branch=master)](https://travis-ci.org/keathley/alchemy)
 
 Safely perform refactoring experiments in production.
 
