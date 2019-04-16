@@ -68,19 +68,10 @@ defmodule Alchemy.Experiment do
   randomized to account for any ordering issues.
   """
   def run(experiment=%Experiment{}) do
-    experiment
-    |> gather_result
-    |> publish(experiment.publisher)
-    |> control_value
-  end
-
-  defp gather_result(experiment) do
     observations =
       experiment.behaviors
       |> Enum.shuffle
-      |> Enum.map(&(fn -> Observation.run(&1) end)) # lazily evaluate
-      |> Enum.map(&async/1)
-      |> Enum.map(&await/1)
+      |> Enum.map(&Observation.run(&1)) # lazily evaluate
 
     control =
       observations
@@ -92,7 +83,17 @@ defmodule Alchemy.Experiment do
       |> Keyword.delete(:control)
       |> Enum.map(fn(a) -> elem(a, 1) end)
 
-    Result.new(experiment, control, candidates)
+    result = Result.new(experiment, control, candidates)
+
+    publish(result, experiment.publisher)
+
+    case Result.raised?(control) do
+      true ->
+        reraise control.error.error, control.error.stacktrace
+
+      false ->
+        control.value
+    end
   end
 
   defp publish(result, nil) do
@@ -111,18 +112,17 @@ defmodule Alchemy.Experiment do
   end
 
   def control_value(%{control: control}) do
-    control.value
+    case control.value do
+      {:raised, e, stacktrace} ->
+        reraise e, stacktrace
+
+      value ->
+        value
+    end
   end
 
   defp uuid do
     UUID.uuid1()
   end
-
-  defp async(func) do
-    Task.Supervisor.async(Alchemy.TaskSupervisor, func)
-  end
-
-  defp await(thunk) do
-    Task.await(thunk, Application.get_env(:alchemy, :await_timeout, 5_000))
-  end
 end
+
