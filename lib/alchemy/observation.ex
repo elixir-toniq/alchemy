@@ -4,15 +4,17 @@ defmodule Alchemy.Observation do
   defstruct [
     duration: nil,
     value: nil,
-    error: nil
+    error: nil,
+    cleaned_value: nil
   ]
 
-  def run({type, function}) do
+  def run({type, function}, cleaner) do
     {duration, {value, error}} = :timer.tc(fn -> run_safely(function) end)
 
     observation = %__MODULE__{
       duration: duration / @milliseconds,
       value: value,
+      cleaned_value: cleaner.(value),
       error: error,
     }
 

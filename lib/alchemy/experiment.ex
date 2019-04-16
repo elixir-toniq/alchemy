@@ -3,9 +3,10 @@ defmodule Alchemy.Experiment do
     name: "",
     uuid: nil,
     behaviors: [],
-    compare: nil,
     result: nil,
     publisher: nil,
+    compare: nil,
+    cleaner: nil,
   ]
 
   alias __MODULE__
@@ -20,13 +21,19 @@ defmodule Alchemy.Experiment do
   def new(title) do
     %Experiment{name: title, uuid: uuid()}
     |> comparator(fn(a, b) -> a == b end)
+    |> clean(fn value -> value end)
   end
 
   @doc """
-  Sets the module to use for publishing results.
+  Sets the function to use for publishing results. Can accept either a module or
+  a function. If a module name is passed in then the module is expected to have
+  a `publish/1` function which will be used for publishing results.
   """
   def publisher(experiment, mod) when is_atom(mod) do
-    %{experiment | publisher: mod}
+    %{experiment | publisher: &mod.publish/1}
+  end
+  def publisher(experiment, f) when is_function(f) do
+    %{experiment | publisher: f}
   end
 
   @doc """
@@ -59,6 +66,14 @@ defmodule Alchemy.Experiment do
   end
 
   @doc """
+  Adds a clean function. This function will be run for each observation and
+  can be used to reduce noise when publishing results.
+  """
+  def clean(experiment, f) do
+    %{experiment | cleaner: f}
+  end
+
+  @doc """
   Runs the experiment.
 
   If the `candidate` is provided then it will be run against the `control`. The
@@ -73,7 +88,7 @@ defmodule Alchemy.Experiment do
     observations =
       experiment.behaviors
       |> Enum.shuffle
-      |> Enum.map(&Observation.run(&1)) # lazily evaluate
+      |> Enum.map(&Observation.run(&1, experiment.cleaner)) # lazily evaluate
 
     control =
       observations
@@ -104,7 +119,7 @@ defmodule Alchemy.Experiment do
   end
 
   defp publish(result, publisher) do
-    publisher.publish(result)
+    publisher.(result)
     result
   end
 

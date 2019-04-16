@@ -98,5 +98,40 @@ defmodule Alchemy.ExperimentTest do
 
     assert result == 42
   end
+
+  describe "clean/2" do
+    test "defaults to the value" do
+      pid = self()
+
+      spawn(fn ->
+        new("clean")
+        |> control(fn -> %{name: "Chris"} end)
+        |> candidate(fn -> %{name: "Andra"} end)
+        |> publisher(fn result -> send(pid, {:result, result}) end)
+        |> run
+      end)
+
+      assert_receive {:result, result}
+      assert result.control.cleaned_value == %{name: "Chris"}
+      assert Enum.at(result.candidates, 0).cleaned_value == %{name: "Andra"}
+    end
+
+    test "adds a cleaned value to the observation" do
+      pid = self()
+
+      spawn(fn ->
+        new("clean")
+        |> control(fn -> %{name: "Chris"} end)
+        |> candidate(fn -> %{name: "Andra"} end)
+        |> publisher(fn result -> send(pid, {:result, result}) end)
+        |> clean(fn value -> value.name end)
+        |> run
+      end)
+
+      assert_receive {:result, result}
+      assert result.control.cleaned_value == "Chris"
+      assert Enum.at(result.candidates, 0).cleaned_value == "Andra"
+    end
+  end
 end
 
