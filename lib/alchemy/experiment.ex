@@ -7,6 +7,7 @@ defmodule Alchemy.Experiment do
     publisher: nil,
     compare: nil,
     cleaner: nil,
+    ignores: [],
   ]
 
   alias __MODULE__
@@ -71,6 +72,16 @@ defmodule Alchemy.Experiment do
   """
   def clean(experiment, f) do
     %{experiment | cleaner: f}
+  end
+
+  @doc """
+  Adds an ignore clause to the experiment. This clause will be called if there
+  is a mismatch between the control values and the candidate values. This is a
+  useful function if you want to ignore known mismatches. Multiple ignore
+  clauses can be stacked together.
+  """
+  def ignore(experiment, f) do
+    %{experiment | ignores: [f | experiment.ignores]}
   end
 
   @doc """

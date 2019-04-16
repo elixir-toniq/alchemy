@@ -4,6 +4,8 @@ defmodule Alchemy.ExperimentTest do
 
   import Alchemy.Experiment
 
+  alias Alchemy.Result
+
   test "new/1 assigns a name" do
     assert new("test").name == "test"
   end
@@ -131,6 +133,24 @@ defmodule Alchemy.ExperimentTest do
       assert_receive {:result, result}
       assert result.control.cleaned_value == "Chris"
       assert Enum.at(result.candidates, 0).cleaned_value == "Andra"
+    end
+  end
+
+  describe "ignore/2" do
+    test "can ignore value mismatches" do
+      pid = self()
+
+      spawn(fn ->
+        new("clean")
+        |> control(fn -> %{name: "Chris"} end)
+        |> candidate(fn -> %{name: "Andra"} end)
+        |> ignore(fn %{name: "Chris"}, %{name: "Andra"} -> true end)
+        |> publisher(fn result -> send(pid, {:result, result}) end)
+        |> run
+      end)
+
+      assert_receive {:result, result}
+      assert Result.ignored?(result) == true
     end
   end
 end
