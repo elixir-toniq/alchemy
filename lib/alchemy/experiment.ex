@@ -63,7 +63,7 @@ defmodule Alchemy.Experiment do
   ```
   """
   def comparator(experiment, thunk) when is_function(thunk) do
-    %Experiment{experiment | compare: thunk}
+    %{experiment | compare: thunk}
   end
 
   @doc """

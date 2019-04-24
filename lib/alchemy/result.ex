@@ -18,8 +18,8 @@ defmodule Alchemy.Result do
 
     mismatched =
       candidates
-      |> Enum.filter(fn(can) -> compare_observations(experiment, control, can) end)
-      |> Enum.filter(fn(can) -> can in ignored end)
+      |> Enum.reject(fn(can) -> can in ignored end)
+      |> Enum.reject(fn(can) -> observations_match?(experiment, control, can) end)
 
     %Result{
       name: experiment.name,
@@ -44,10 +44,10 @@ defmodule Alchemy.Result do
   def raised?(%Observation{error: nil}), do: false
   def raised?(_), do: true
 
-  defp compare_observations(experiment, control, candidate) do
+  defp observations_match?(experiment, control, candidate) do
     c1 = control.value || control.error.error
     c2 = candidate.value || candidate.error.error
-    !experiment.compare.(c1, c2)
+    experiment.compare.(c1, c2)
   end
 
   defp value_mismatch?(%{value: value}, %{value: value}), do: false
