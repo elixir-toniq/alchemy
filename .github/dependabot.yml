@@ -1,0 +1,15 @@
+version: 2
+updates:
+- package-ecosystem: mix
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: earmark
+    versions:
+    - 1.4.14
+  - dependency-name: ex_doc
+    versions:
+    - 0.24.0
