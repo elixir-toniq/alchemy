@@ -21,7 +21,7 @@ defmodule Alchemy.Mixfile do
 
   defp deps do
     [
-      {:uuid, "~> 1.1"},
+      {:elixir_uuid, "~> 1.2"},
       {:ex_doc, "~> 0.20", only: :dev},
       {:earmark, "~> 1.2", only: :dev}
     ]
