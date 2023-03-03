@@ -1,7 +1,6 @@
 defmodule Alchemy.Experiment do
   defstruct [
     name: "",
-    uuid: nil,
     behaviors: [],
     result: nil,
     publisher: nil,
@@ -20,7 +19,7 @@ defmodule Alchemy.Experiment do
   Generates a new experiment. Alias for `Experiment.new/1`
   """
   def experiment(title) do
-    %Experiment{name: title, uuid: uuid()}
+    %Experiment{name: title}
     |> comparator(fn(a, b) -> a == b end)
     |> clean(fn value -> value end)
   end
@@ -147,10 +146,6 @@ defmodule Alchemy.Experiment do
       value ->
         value
     end
-  end
-
-  defp uuid do
-    UUID.uuid1()
   end
 end
 

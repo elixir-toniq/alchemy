@@ -10,10 +10,6 @@ defmodule Alchemy.ExperimentTest do
     assert experiment("test").name == "test"
   end
 
-  test "experiment/1 generates a unique identifier" do
-    assert experiment("test").uuid
-  end
-
   test "experiment/1 generates a default comparator" do
     assert experiment("test").compare
   end
@@ -23,7 +19,7 @@ defmodule Alchemy.ExperimentTest do
       experiment("test")
       |> comparator(fn(a, b) -> a.value == b.value end)
 
-    assert exp.compare.(%{uuid: 1, value: 1337}, %{uuid: 2, value: 1337})
+    assert exp.compare.(%{something_ignored: 1, value: 1337}, %{something_ignored: 2, value: 1337})
   end
 
   test "control/2 assigns the control" do

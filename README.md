@@ -139,7 +139,7 @@ defmodule Publisher do
       candidate: observation_payload(Enum.at(result.candidates, 0))
     }
 
-    :ets.insert(:alchemy, {result.name, result.uuid, payload})
+    :ets.insert(:alchemy, {result.name, payload})
   end
 
   # If this observation raised an error then store the error
