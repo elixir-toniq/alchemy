@@ -3,7 +3,6 @@ defmodule Alchemy.Result do
     name: nil,
     control: nil,
     candidates: [],
-    uuid: nil,
     mismatched: [],
     ignored: [],
   ]
@@ -23,7 +22,6 @@ defmodule Alchemy.Result do
 
     %Result{
       name: experiment.name,
-      uuid: experiment.uuid,
       control: control,
       candidates: candidates,
       mismatched: mismatched,
